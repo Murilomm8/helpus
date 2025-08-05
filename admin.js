@@ -1,17 +1,12 @@
-// Função principal para carregar chamados da API e montar a tabela
 async function carregarChamados() {
   try {
     const resposta = await fetch('http://localhost:3000/api/chamados');
-
-    if (!resposta.ok) {
-      throw new Error(`Erro ${resposta.status}: ${resposta.statusText}`);
-    }
+    if (!resposta.ok) throw new Error(`Erro ${resposta.status}: ${resposta.statusText}`);
 
     const chamados = await resposta.json();
-
     if (!Array.isArray(chamados)) {
-      console.warn('Retorno inesperado da API:', chamados);
-      alert('Formato inválido ao carregar chamados.');
+      console.warn('API retornou formato inesperado:', chamados);
+      alert('Erro de formato ao carregar chamados.');
       return;
     }
 
@@ -19,27 +14,24 @@ async function carregarChamados() {
     tabela.innerHTML = '';
 
     chamados.forEach(chamado => {
+      const id = chamado._id || chamado.id;
+      const statusFormatado = chamado.status?.toLowerCase();
       const linha = document.createElement('tr');
 
-      // Aplica estilo se resolvido
-      const statusFormatado = chamado.status?.toLowerCase();
-      if (statusFormatado === 'resolvido') {
-        linha.classList.add('table-success');
-      }
+      if (statusFormatado === 'resolvido') linha.classList.add('table-success');
 
-      // Ações condicionais
       let acoes = `
-        <button class="btn btn-outline-info btn-sm me-1 visualizar" data-id="${chamado.id}" title="Visualizar">
+        <button class="btn btn-outline-info btn-sm me-1 visualizar" data-id="${id}" title="Visualizar">
           <i class="bi bi-eye"></i>
         </button>
       `;
 
       if (statusFormatado === 'aberto') {
         acoes += `
-          <button class="btn btn-outline-success btn-sm me-1 resolver" data-id="${chamado.id}" title="Resolver">
+          <button class="btn btn-outline-success btn-sm me-1 resolver" data-id="${id}" title="Resolver">
             <i class="bi bi-check2-circle"></i>
           </button>
-          <button class="btn btn-outline-danger btn-sm excluir" data-id="${chamado.id}" title="Excluir">
+          <button class="btn btn-outline-danger btn-sm excluir" data-id="${id}" title="Excluir">
             <i class="bi bi-trash"></i>
           </button>
         `;
@@ -52,25 +44,26 @@ async function carregarChamados() {
       }
 
       linha.innerHTML = `
-        <td>${chamado.id}</td>
-        <td>${chamado.nome}</td>
-        <td>${chamado.problema}</td>
-        <td>${chamado.status}</td>
+        <td>${id}</td>
+        <td>${chamado.nome || '—'}</td>
+        <td>${chamado.problema || '—'}</td>
+        <td>${chamado.status || '—'}</td>
         <td>${acoes}</td>
       `;
 
       tabela.appendChild(linha);
     });
 
-    conectarAcoes(); // Liga os botões
+    conectarAcoes();
   } catch (erro) {
     console.error('Erro ao carregar chamados:', erro);
-    alert('Erro ao carregar chamados. Verifique sua conexão com o servidor.');
+    alert('Erro ao obter chamados. Verifique a API.');
   }
 }
 
-// Resolve chamado
 async function resolverChamado(id) {
+  if (!id) return alert('ID inválido para resolução.');
+
   try {
     const resposta = await fetch(`http://localhost:3000/api/chamados/${id}`, {
       method: 'PUT',
@@ -82,41 +75,46 @@ async function resolverChamado(id) {
       alert('Chamado resolvido com sucesso!');
       await carregarChamados();
     } else {
-      alert('Falha ao atualizar chamado.');
+      const msg = await resposta.text();
+      alert(`Erro ao resolver: ${msg || resposta.statusText}`);
     }
   } catch (erro) {
-    console.error('Erro ao resolver chamado:', erro);
+    console.error(`Erro ao resolver chamado ${id}:`, erro);
     alert('Erro ao resolver chamado.');
   }
 }
 
-// Exclui chamado
 async function excluirChamado(id) {
-  if (!confirm(`Deseja excluir o chamado ID ${id}?`)) return;
+  if (!id) return alert('ID inválido para exclusão.');
+  if (!confirm(`Deseja realmente excluir o chamado ID ${id}?`)) return;
 
   try {
     const resposta = await fetch(`http://localhost:3000/api/chamados/${id}`, {
       method: 'DELETE'
     });
 
+    if (resposta.status === 404) {
+      alert(`Chamado ID ${id} não encontrado no servidor.`);
+      return;
+    }
+
     if (resposta.ok) {
       alert('Chamado excluído com sucesso!');
       await carregarChamados();
     } else {
-      alert('Erro ao excluir chamado.');
+      const msg = await resposta.text();
+      alert(`Falha ao excluir chamado: ${msg || resposta.statusText}`);
     }
   } catch (erro) {
-    console.error('Erro ao excluir chamado:', erro);
-    alert('Erro de comunicação com o servidor.');
+    console.error(`Erro ao excluir chamado ${id}:`, erro);
+    alert('Erro ao excluir chamado.');
   }
 }
 
-// Visualiza chamado
 function visualizarChamado(id) {
-  alert(`Visualizar chamado ID: ${id}\n(Futuramente pode abrir modal com detalhes)`);
+  alert(`Visualizando chamado ID: ${id}\n(Futuramente será modal com detalhes).`);
 }
 
-// Liga os botões após renderizar a tabela
 function conectarAcoes() {
   document.querySelectorAll('.resolver').forEach(btn => {
     btn.onclick = () => resolverChamado(btn.dataset.id);
@@ -131,5 +129,4 @@ function conectarAcoes() {
   });
 }
 
-// Inicialização
 window.addEventListener('DOMContentLoaded', carregarChamados);
