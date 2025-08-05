@@ -1,0 +1,33 @@
+body {
+  background-color: #f8f9fa;
+  font-family: 'Poppins', sans-serif;
+}
+
+h1, h2, h3 {
+  color: #0056b3;
+  font-weight: 600;
+}
+
+.btn-primary {
+  background-color: #0056b3;
+  border: none;
+}
+
+.card {
+  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+  border-radius: 8px;
+}
+
+table th, table td {
+  vertical-align: middle;
+}
+
+.login-box {
+  max-width: 400px;
+  margin: auto;
+  margin-top: 80px;
+  padding: 30px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 0 12px rgba(0,0,0,0.1);
+}
