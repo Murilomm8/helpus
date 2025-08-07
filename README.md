@@ -17,12 +17,19 @@ O projeto está organizado da seguinte forma:
 
 helpus/
 ├── server.js              # Backend com rotas REST
+
 ├── helpus_db.sql          # Script opcional para criar a base de dados
+
 ├── public/
+
 │   ├── admin.html         # Painel de administração
+
 │   ├── admin.js           # Lógica do painel
+
 │   ├── home.html          # Página inicial (opcional)
+
 │   └── style.css          # Estilos personalizados (opcional)
+
 🧑‍💻 Funcionalidades
 Para Usuários
 Registro de chamados com nome e descrição do problema
